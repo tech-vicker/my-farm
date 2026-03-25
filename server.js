@@ -7,16 +7,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database setup - use persistent storage in production
-const dbPath = process.env.NODE_ENV === 'production' 
-    ? '/tmp/farm.db' 
-    : './farm.db';
-
-const db = new sqlite3.Database(dbPath, (err) => {
+// Database setup
+const db = new sqlite3.Database('./farm.db', (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
     } else {
-        console.log('Connected to SQLite database at:', dbPath);
+        console.log('Connected to SQLite database');
         initializeDatabase();
     }
 });
@@ -29,11 +25,11 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'smartfarm2024securekey12345',
+    secret: 'farm-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+        secure: false, // Set to true in production with HTTPS
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
