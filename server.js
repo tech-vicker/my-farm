@@ -29,7 +29,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'farm-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET || 'smartfarm2024securekey12345',
     resave: false,
     saveUninitialized: false,
     cookie: { 
