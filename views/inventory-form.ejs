@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Smart Farm Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F5F7FA;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary {
+            background: #F5F5F5;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #E0E0E0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        .category-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-items {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+
+        .nav-item.active {
+            color: #2196F3;
+        }
+
+        .nav-item:hover {
+            color: #2196F3;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1 class="page-title"><%= title %></h1>
+            <a href="/inventory" class="back-btn">← Back to Inventory</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <form action="<%= action %>" method="POST">
+                <div class="form-group">
+                    <label for="item_name">Item Name *</label>
+                    <input type="text" id="item_name" name="item_name" required 
+                           value="<%= item ? item.item_name : '' %>" 
+                           placeholder="e.g., Organic Fertilizer, Corn Seeds, Tractor">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="Fertilizer" <%= item && item.category === 'Fertilizer' ? 'selected' : '' %>>
+                            🌱 Fertilizer
+                        </option>
+                        <option value="Seeds" <%= item && item.category === 'Seeds' ? 'selected' : '' %>>
+                            🌾 Seeds
+                        </option>
+                        <option value="Tools" <%= item && item.category === 'Tools' ? 'selected' : '' %>>
+                            🔧 Tools
+                        </option>
+                        <option value="Equipment" <%= item && item.category === 'Equipment' ? 'selected' : '' %>>
+                            🚜 Equipment
+                        </option>
+                        <option value="Feed" <%= item && item.category === 'Feed' ? 'selected' : '' %>>
+                            🐾 Feed
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">Current Quantity *</label>
+                        <input type="number" id="quantity" name="quantity" 
+                               step="0.01" min="0" required 
+                               value="<%= item ? item.quantity : '' %>" 
+                               placeholder="Current stock amount">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unit">Unit *</label>
+                        <input type="text" id="unit" name="unit" required 
+                               value="<%= item ? item.unit : '' %>" 
+                               placeholder="e.g., kg, bags, liters, pieces">
+                        <div class="help-text">Unit of measurement (kg, liters, bags, etc.)</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="min_stock_level">Minimum Stock Level</label>
+                    <input type="number" id="min_stock_level" name="min_stock_level" 
+                           step="0.01" min="0" 
+                           value="<%= item ? item.min_stock_level : '' %>" 
+                           placeholder="Minimum quantity before alert">
+                    <div class="help-text">Get alerted when stock falls below this level</div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/inventory" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <%= item ? 'Update Item' : 'Add Item' %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <a href="/dashboard" class="nav-item">
+                <div class="nav-icon">🏠</div>
+                <span>Dashboard</span>
+            </a>
+            <a href="/crops" class="nav-item">
+                <div class="nav-icon">🌾</div>
+                <span>Crops</span>
+            </a>
+            <a href="/livestock" class="nav-item">
+                <div class="nav-icon">🐄</div>
+                <span>Livestock</span>
+            </a>
+            <a href="/finance" class="nav-item">
+                <div class="nav-icon">💰</div>
+                <span>Finance</span>
+            </a>
+            <a href="/inventory" class="nav-item active">
+                <div class="nav-icon">📦</div>
+                <span>Inventory</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>

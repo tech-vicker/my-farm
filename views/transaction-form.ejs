@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Smart Farm Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F5F7FA;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #9C27B0;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(156, 39, 176, 0.3);
+        }
+
+        .btn-secondary {
+            background: #F5F5F5;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #E0E0E0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            padding: 20px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .type-option:hover {
+            border-color: #9C27B0;
+        }
+
+        .type-option.selected {
+            border-color: #9C27B0;
+            background: #F3E5F5;
+        }
+
+        .type-option.income.selected {
+            background: #E8F5E8;
+            border-color: #4CAF50;
+        }
+
+        .type-option.expense.selected {
+            background: #FFEBEE;
+            border-color: #F44336;
+        }
+
+        .type-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .type-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-items {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+
+        .nav-item.active {
+            color: #9C27B0;
+        }
+
+        .nav-item:hover {
+            color: #9C27B0;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .type-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1 class="page-title"><%= title %></h1>
+            <a href="/finance" class="back-btn">← Back to Finance</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <form action="<%= action %>" method="POST">
+                <div class="form-group">
+                    <label>Transaction Type *</label>
+                    <div class="type-selector">
+                        <div class="type-option income <%= transaction && transaction.type === 'Income' ? 'selected' : '' %>" 
+                             onclick="selectType('Income')">
+                            <div class="type-icon">💵</div>
+                            <div class="type-label">Income</div>
+                        </div>
+                        <div class="type-option expense <%= transaction && transaction.type === 'Expense' ? 'selected' : '' %>" 
+                             onclick="selectType('Expense')">
+                            <div class="type-icon">💸</div>
+                            <div class="type-label">Expense</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="type" name="type" value="<%= transaction ? transaction.type : '' %>" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount (KSH) *</label>
+                        <input type="number" id="amount" name="amount" 
+                               step="0.01" min="0" required 
+                               value="<%= transaction ? transaction.amount : '' %>" 
+                               placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" name="date" required 
+                           value="<%= transaction && transaction.date ? transaction.date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0] %>">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" 
+                              placeholder="Enter a description for this transaction"><%= transaction ? transaction.description || '' : '' %></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/finance" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <%= transaction ? 'Update Transaction' : 'Add Transaction' %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <a href="/dashboard" class="nav-item">
+                <div class="nav-icon">🏠</div>
+                <span>Dashboard</span>
+            </a>
+            <a href="/crops" class="nav-item">
+                <div class="nav-icon">🌾</div>
+                <span>Crops</span>
+            </a>
+            <a href="/livestock" class="nav-item">
+                <div class="nav-icon">🐄</div>
+                <span>Livestock</span>
+            </a>
+            <a href="/finance" class="nav-item active">
+                <div class="nav-icon">💰</div>
+                <span>Finance</span>
+            </a>
+            <a href="/inventory" class="nav-item">
+                <div class="nav-icon">📦</div>
+                <span>Inventory</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        const incomeCategories = ['Crop Sales', 'Livestock Sales', 'Grants', 'Subsidies', 'Other Income'];
+        const expenseCategories = ['Seeds', 'Feed', 'Labor', 'Fertilizer', 'Equipment', 'Fuel', 'Maintenance', 'Other Expenses'];
+
+        function selectType(type) {
+            document.getElementById('type').value = type;
+            
+            // Update UI
+            document.querySelectorAll('.type-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            if (type === 'Income') {
+                document.querySelector('.type-option.income').classList.add('selected');
+            } else {
+                document.querySelector('.type-option.expense').classList.add('selected');
+            }
+            
+            // Update category options
+            const categorySelect = document.getElementById('category');
+            const currentValue = categorySelect.value;
+            const categories = type === 'Income' ? incomeCategories : expenseCategories;
+            
+            categorySelect.innerHTML = '<option value="">Select category</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                if (category === currentValue) {
+                    option.selected = true;
+                }
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentType = document.getElementById('type').value;
+            if (currentType) {
+                selectType(currentType);
+            }
+        });
+    </script>
+</body>
+</html>
