@@ -1,22 +1,25 @@
 {
   "name": "my-farm",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Smart Farm Management System",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "engines": {
+    "node": "20.x"
+  },
+  "keywords": ["farm", "management", "agriculture"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "ejs": "^5.0.1",
-    "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "sqlite3": "^6.0.1"
+    "bcryptjs": "^2.4.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-session": "^1.18.0",
+    "sqlite3": "^5.1.7"
   }
 }

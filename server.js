@@ -6,13 +6,15 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Database setup
-const db = new sqlite3.Database('./farm.db', (err) => {
+const dbPath = isProduction ? ':memory:' : './farm.db';
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
     } else {
-        console.log('Connected to SQLite database');
+        console.log(`Connected to SQLite database: ${dbPath}`);
         initializeDatabase();
     }
 });
@@ -25,12 +27,12 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Session configuration
 app.use(session({
-    secret: 'farm-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET || 'farm-dev-secret-fallback',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true in production with HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: isProduction ? 'auto' : false,
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
 
@@ -45,16 +47,21 @@ function isAuthenticated(req, res, next) {
 
 // Initialize database tables
 function initializeDatabase() {
-    // Drop existing users table to recreate with new schema
-    db.run(`DROP TABLE IF EXISTS users`, (err) => {
-        if (err) {
-            console.error('Error dropping users table:', err);
-        } else {
-            console.log('Dropped old users table for migration');
-        }
-        
-        // Create new users table with email
-        db.run(`CREATE TABLE users (
+    if (isProduction) {
+        console.log('Production mode: Database tables created if needed, no migrations');
+        createTablesIfNotExist();
+        seedDemoUserIfEmpty();
+    } else {
+        // Local dev: allow destructive migration
+        console.log('Development mode: Running database migration');
+        db.run(`DROP TABLE IF EXISTS users`);
+        createTablesIfNotExist();
+    }
+}
+
+function createTablesIfNotExist() {
+    const tables = [
+        `CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
@@ -62,67 +69,78 @@ function initializeDatabase() {
             farm_name TEXT,
             phone TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`, (err) => {
+        )`,
+        `CREATE TABLE IF NOT EXISTS crops (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            crop_name TEXT NOT NULL,
+            variety TEXT,
+            field_area REAL,
+            planting_date DATE,
+            expected_harvest_date DATE,
+            status TEXT CHECK(status IN ('Seedling', 'Growing', 'Flowering', 'Harvested', 'Failed')),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS livestock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            category TEXT CHECK(category IN ('Poultry', 'Cattle', 'Sheep', 'Goats', 'Pigs')),
+            health_status TEXT CHECK(health_status IN ('Healthy', 'Sick', 'Quarantined')),
+            age_months INTEGER,
+            breed TEXT,
+            quantity INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT CHECK(type IN ('Income', 'Expense')),
+            category TEXT,
+            description TEXT,
+            amount REAL NOT NULL,
+            date DATE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS inventory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            item_name TEXT NOT NULL,
+            category TEXT CHECK(category IN ('Fertilizer', 'Seeds', 'Tools', 'Equipment', 'Feed')),
+            quantity REAL NOT NULL,
+            unit TEXT,
+            min_stock_level REAL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`
+    ];
+
+    tables.forEach((sql, index) => {
+        db.run(sql, (err) => {
             if (err) {
-                console.error('Error creating users table:', err);
-            } else {
-                console.log('Created new users table with email field');
+                console.error(`Error creating table ${index + 1}:`, err);
             }
         });
     });
+}
 
-    // Crops table
-    db.run(`CREATE TABLE IF NOT EXISTS crops (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        crop_name TEXT NOT NULL,
-        variety TEXT,
-        field_area REAL,
-        planting_date DATE,
-        expected_harvest_date DATE,
-        status TEXT CHECK(status IN ('Seedling', 'Growing', 'Flowering', 'Harvested', 'Failed')),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
-
-    // Livestock table
-    db.run(`CREATE TABLE IF NOT EXISTS livestock (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        category TEXT CHECK(category IN ('Poultry', 'Cattle', 'Sheep', 'Goats', 'Pigs')),
-        health_status TEXT CHECK(health_status IN ('Healthy', 'Sick', 'Quarantined')),
-        age_months INTEGER,
-        breed TEXT,
-        quantity INTEGER,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
-
-    // Financial transactions table
-    db.run(`CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        type TEXT CHECK(type IN ('Income', 'Expense')),
-        category TEXT,
-        description TEXT,
-        amount REAL NOT NULL,
-        date DATE,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
-
-    // Inventory table
-    db.run(`CREATE TABLE IF NOT EXISTS inventory (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        item_name TEXT NOT NULL,
-        category TEXT CHECK(category IN ('Fertilizer', 'Seeds', 'Tools', 'Equipment', 'Feed')),
-        quantity REAL NOT NULL,
-        unit TEXT,
-        min_stock_level REAL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
+function seedDemoUserIfEmpty() {
+    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+        if (row && row.count === 0) {
+            console.log('No users found, seeding demo admin');
+            bcrypt.hash('admin123', 10, (err, hash) => {
+                if (!err) {
+                    db.run('INSERT INTO users (email, password, full_name, farm_name) VALUES (?, ?, ?, ?)',
+                        ['admin@farm.com', hash, 'Admin Farmer', 'Demo Farm'], (err) => {
+                            if (err) console.error('Demo user seed failed:', err);
+                            else console.log('Demo admin user created: admin@farm.com / admin123');
+                        });
+                }
+            });
+        }
+    });
 }
 
 // Routes
@@ -711,7 +729,18 @@ app.post('/profile', isAuthenticated, async (req, res) => {
     }
 });
 
+// Health check for Render
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', environment: process.env.NODE_ENV || 'development' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).send('Page not found');
+});
+
 // Start server
-app.listen(PORT, () => {
-    console.log(`Smart Farm Management System running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Smart Farm Management System running on port ${PORT} in ${isProduction ? 'production' : 'development'} mode`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
 });

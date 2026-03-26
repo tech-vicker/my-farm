@@ -97,10 +97,10 @@ my-farm/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (version 14 or higher)
+- Node.js (version 20 recommended)
 - npm (comes with Node.js)
 
-### Installation
+### Local Development
 
 1. **Clone or download the project**
    ```bash
@@ -112,13 +112,35 @@ my-farm/
    npm install
    ```
 
-3. **Start the application**
+3. **Start development server**
    ```bash
-   node server.js
+   npm run dev
    ```
+   Open http://localhost:3000
 
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
+### Production (Render Deployment)
+
+1. **Push to GitHub** (no `farm.db`, ignored in .gitignore)
+2. **Render.com**: New Web Service → GitHub repo → Node
+   - Build Command: (blank)
+   - Start Command: auto-detects `npm start`
+3. **Environment Variables** (Render Dashboard > Environment):
+   ```
+   NODE_ENV=production
+   SESSION_SECRET=your-64-char-secret-here!! (generate with openssl rand -base64 32)
+   ```
+4. **Deploy** → App live at your-app.onrender.com
+5. **Demo login**: admin@farm.com / admin123 (seeded in prod)
+
+**Note**: Production uses in-memory DB (data resets per deploy). For persistence, add Render Postgres DB.
+
+Test prod locally:
+```bash
+set NODE_ENV=production
+set SESSION_SECRET=testsecret123
+npm start
+```
+Health: http://localhost:$PORT/health
 
 ### First Time Setup
 1. Click "Sign up here" on the login page
